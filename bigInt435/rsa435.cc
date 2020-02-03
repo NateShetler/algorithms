@@ -10,8 +10,8 @@
 // 'BigIntegerLibrary.hh' includes all of the library headers.
 #include "BigIntegerLibrary.hh"
 
-// Pre: This function accepts a number that will be checked to see if it prime, and
-// also an integer for the number of iterations to try and see if the number is prime
+// Pre: This function accepts a BigUnsigned number that will be checked to see if it is prime, 
+// and also an integer for the number of iterations to try and see if the number is prime.
 // Post: This function will return true if the number is prime and false if it is not. 
 bool fermatTest(BigUnsigned &number,  int &numIterations);
 
