@@ -37,7 +37,7 @@ int main(){
       pqFile.open("p_q.txt");
       
       // Generateing P
-      BigUnsigned pNumber = BigUnsigned(1);
+      BigUnsigned pNumber;
       pNumber = createPrime();
 
       std::cout << "This is P\n";
@@ -47,7 +47,7 @@ int main(){
       pqFile << pNumber << "\n";
 
       // Generating Q
-      BigUnsigned qNumber = BigUnsigned(1);
+      BigUnsigned qNumber;
       qNumber = createPrime();
 
       std::cout << "This is Q\n";
@@ -64,7 +64,6 @@ int main(){
 
       // This is phi of n
       BigUnsigned phiOfn = (pNumber - 1) * (qNumber - 1);
-   
 
 	} catch(char const* err) {
 		std::cout << "The library threw an exception:\n"
@@ -119,10 +118,13 @@ BigUnsigned createPrime()
    bool foundPrime = false;
 
    // number that will be used for the prime number
-   BigUnsigned number = BigUnsigned(1);
+   BigUnsigned number;
+
+   std::string stringNum;
+   int stringLength = 0;
 
    // Loop that will go until a prime number is found
-   while (!foundPrime)
+   while (!foundPrime || stringLength < 155)
    {
       // Reseting number
       number = 0;
@@ -131,6 +133,8 @@ BigUnsigned createPrime()
       for (int i = 0; i < 146; i++) {
          number = number * 10 + rand();
       }
+      stringNum = bigIntegerToString(number);
+      stringLength = stringNum.length();
 
       // Run fermats test to see if the number is prime
       foundPrime = fermatTest(number);
