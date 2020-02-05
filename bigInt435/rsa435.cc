@@ -15,6 +15,10 @@
 // Post: This function will return true if the number is prime and false if it is not. 
 bool fermatTest(BigUnsigned &number);
 
+// Pre: This function accepts no parameters
+// Post: This function will generate a prime number and then return it.
+BigUnsigned createPrime();
+
 int main(){
 	/* The library throws 'const char *' error messages when things go
 	 * wrong.  It's a good idea to catch them using a 'try' block like this
@@ -34,9 +38,8 @@ int main(){
       
       // Generateing P
       BigUnsigned pNumber = BigUnsigned(1);
-      for (int i = 0; i < 146; i++) {
-         pNumber = pNumber * 10 + rand();
-      }
+      pNumber = createPrime();
+
       std::cout << "This is P\n";
       std::cout << pNumber <<std::endl;
 
@@ -45,9 +48,8 @@ int main(){
 
       // Generating Q
       BigUnsigned qNumber = BigUnsigned(1);
-      for (int i = 0; i < 146; i++) {
-         qNumber = qNumber * 10 + rand();
-      }
+      qNumber = createPrime();
+
       std::cout << "This is Q\n";
       std::cout << qNumber << std::endl;
 
@@ -62,11 +64,7 @@ int main(){
 
       // This is phi of n
       BigUnsigned phiOfn = (pNumber - 1) * (qNumber - 1);
-      
-      // This is a test block for checking the fermatTest function. REMOVE AFTER TESTING--------
-      bool isPrime = false;
-      isPrime = fermatTest(pNumber);
-      std::cout << isPrime << std::endl;
+   
 
 	} catch(char const* err) {
 		std::cout << "The library threw an exception:\n"
@@ -80,16 +78,18 @@ int main(){
 // Post: This function will return true if the number is prime and false if it is not. 
 bool fermatTest(BigUnsigned &number)
 {
+   // The bases for the test
+   BigInteger base1 = 2;
+   BigInteger base2 = 5;
+
    // This is the exponent value (p - 1)
    BigUnsigned exponent = number - 1;
 
    // This will be the answer returned by modex (the remainder)
    BigUnsigned answer = 0;
 
-   answer = modexp(2, exponent, number);
-
-   // REMOVE AFTER TESTING-------------------------------------
-   std::cout << "modexp answer 1: " << answer << std::endl;
+   // This call modexp and do the calculation to get the remainder
+   answer = modexp(base1, exponent, number);
 
    // If the remainder is not 1 return false
    if (answer != 1)
@@ -98,7 +98,7 @@ bool fermatTest(BigUnsigned &number)
    }
 
    // Otherwise we will try again
-   answer = modexp(5, exponent, number);
+   answer = modexp(base2, exponent, number);
 
    // If the remainder is not 1 return false
    if (answer != 1)
@@ -109,4 +109,32 @@ bool fermatTest(BigUnsigned &number)
    // Otherwise the remainder is 1 so the number is most likely prime
    return true;
 
+}
+
+// Pre: This function accepts no parameters
+// Post: This function will generate a prime number and then return it.
+BigUnsigned createPrime()
+{
+   // Boolean for determining when a prime is found
+   bool foundPrime = false;
+
+   // number that will be used for the prime number
+   BigUnsigned number = BigUnsigned(1);
+
+   // Loop that will go until a prime number is found
+   while (!foundPrime)
+   {
+      // Reseting number
+      number = 0;
+
+      // Generate random number of 155 digits 
+      for (int i = 0; i < 146; i++) {
+         number = number * 10 + rand();
+      }
+
+      // Run fermats test to see if the number is prime
+      foundPrime = fermatTest(number);
+   }
+
+   return number;
 }
