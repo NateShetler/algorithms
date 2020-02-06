@@ -46,8 +46,8 @@ int main(){
       BigUnsigned pNumber;
       pNumber = createPrime();
 
-      std::cout << "This is P\n";
-      std::cout << pNumber <<std::endl;
+      std::cout << "This is P:" << std::endl;
+      std::cout << pNumber << std::endl;
 
       // Write pNumber to pqFile 
       pqFile << pNumber << "\n";
@@ -56,13 +56,13 @@ int main(){
       BigUnsigned qNumber;
       qNumber = createPrime();
 
-      std::cout << "This is Q\n";
+      std::cout << "This is Q:" << std::endl;
       std::cout << qNumber << std::endl;
 
       // Write qNumber to pqFile 
       pqFile << qNumber << "\n";
 
-      std::cout << "N = P * Q\n";
+      std::cout << "N = P * Q:" << std::endl;
 
       // Generating N
       BigUnsigned nNumber = pNumber * qNumber;
@@ -80,7 +80,13 @@ int main(){
       // Write e & n to the en file
       enFile << e << "\n";
       enFile << nNumber << "\n";
-      
+
+      ////////////////////////////////////////////////////////////////////////////////////
+      std::cout << "E: " << std::endl;
+      std::cout << e << std::endl;
+      std::cout << "Phi of N" << std::endl;
+      std::cout << phiOfn << std::endl;
+
       // Close the files
       pqFile.close();
       enFile.close();
