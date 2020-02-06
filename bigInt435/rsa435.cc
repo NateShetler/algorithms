@@ -19,22 +19,28 @@ bool fermatTest(BigUnsigned &number);
 // Post: This function will generate a prime number and then return it.
 BigUnsigned createPrime();
 
+// Pre: This function acccepts in the phi, e, divisor, x, & y values
+// Post: This function will find the correct e value and set the x & y values used to find d
+void generateE(BigInteger &phi, BigInteger &e, BigInteger &divisor, BigInteger &x, BigInteger &y);
+
 int main(){
 	/* The library throws 'const char *' error messages when things go
 	 * wrong.  It's a good idea to catch them using a 'try' block like this
 	 * one.  Your C++ compiler might need a command-line option to compile
 	 * code that uses exceptions. */
 
-    // Create output file for storing p & q
-    std::ofstream pqFile;
+   // Create output file for storing p & q
+   std::ofstream pqFile, enFile, dnFile;
 
 	try {
       
       // Seeding so numbers are more random
       srand(time(NULL));
 
-      // Open the file for storing p & q
+      // Open the file for storing p & q, e & n, d & n
       pqFile.open("p_q.txt");
+      enFile.open("e_n.txt");
+      dnFile.open("d_n.txt");
       
       // Generateing P
       BigUnsigned pNumber;
@@ -63,7 +69,22 @@ int main(){
       std::cout << nNumber << std::endl;
 
       // This is phi of n
-      BigUnsigned phiOfn = (pNumber - 1) * (qNumber - 1);
+      BigInteger phiOfn = (pNumber - 1) * (qNumber - 1);
+
+      // Create e, divisor, x, & y
+      BigInteger e, divisor, x, y;
+
+      // Generate the e value
+      generateE(phiOfn, e, divisor, x, y);
+
+      // Write e & n to the en file
+      enFile << e << "\n";
+      enFile << nNumber << "\n";
+      
+      // Close the files
+      pqFile.close();
+      enFile.close();
+      dnFile.close();
 
 	} catch(char const* err) {
 		std::cout << "The library threw an exception:\n"
@@ -141,4 +162,25 @@ BigUnsigned createPrime()
    }
 
    return number;
+}
+
+// Pre: This function acccepts in the phi, e, divisor, x, & y values
+// Post: This function will find the correct e value and set the x & y values used to find d
+void generateE(BigInteger &phi, BigInteger &e, BigInteger &divisor, BigInteger &x, BigInteger &y)
+{
+   // Set e's original value
+   e = 151;
+
+   // Find the correct e value that is relatively prime to phi
+   while (divisor != 1)
+   {  
+      // Run the extended euclidean algorithm
+      extendedEuclidean(phi, e, divisor, x, y);
+
+      // If divisor is not 1 add to e
+      if (divisor != 1)
+      {
+         e = e + 2;
+      }
+   }
 }
