@@ -1,4 +1,6 @@
-// You need to complete this program for a part of your first project.
+// Nathaniel Shetler
+// ID: 4015423
+// Class: Algorithms 3460:435
 
 // Standard libraries
 #include <string>
@@ -62,9 +64,10 @@ int main(){
       // Write qNumber to pqFile 
       pqFile << qNumber << "\n";
 
+      // Output N formula
       std::cout << "N = P * Q:" << std::endl;
 
-      // Generating N
+      // Generating N & outputting it
       BigUnsigned nNumber = pNumber * qNumber;
       std::cout << nNumber << std::endl;
 
