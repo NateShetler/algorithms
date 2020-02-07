@@ -7,6 +7,7 @@
 #include <fstream>
 #include "sha256.h"
 #include "BigIntegerLibrary.hh"
+#include <math.h>
 
  
 int main(int argc, char *argv[])
@@ -38,7 +39,7 @@ int main(int argc, char *argv[])
       end = myfile.tellg();
       std::streampos size = end-begin;
       //std::cout << "size of the file: " << size << " bytes.\n"; //size of the file
-      
+
       myfile.seekg (0, std::ios::beg);
       char * memblock = new char[size];
       myfile.read (memblock, size); //read file; it's saved in the char array memblock
@@ -49,12 +50,53 @@ int main(int argc, char *argv[])
       myfile2.write (memblock, size); //write to a file
       myfile2.close();
       
-      //std::cout<<memblock;
+      //std::cout << memblock << std::endl;
         
       if (argv[1][0]=='s') {
          std::cout << "\n"<<"Need to sign the doc.\n";
          //.....
          
+         // Create infile
+         std::ifstream dnFile;
+         
+         // Open the file
+         dnFile.open("d_n.txt");
+
+         // Get the d value
+         std::string dValue;
+         std::getline(dnFile, dValue);
+
+         // Get the n value
+         std::string nValue;
+         std::getline(dnFile, nValue);
+
+         ///////////////////////////////////////////////////////////////////
+         std::cout << "Before hash" << std::endl;
+
+         // Use sha256 to create the hash value
+         std::string sha256SignValue = sha256(memblock);
+
+         ///////////////////////////////////////////////////////////////////
+         std::cout << "After hash" << std::endl;
+
+         // Convert to big integer
+         BigInteger sha256Number = stringToBigInteger(sha256SignValue);
+         BigUnsigned dNumber = stringToBigUnsigned(dValue);
+         BigUnsigned nNumber = stringToBigUnsigned(nValue);
+
+         BigUnsigned digitalSignature = modexp(sha256Number, dNumber, nNumber);
+
+         // Create new signature file
+         std::string signatureName = filename + ".signature";
+
+         // Create ostream for signature file
+         std::ofstream signatureFile (signatureName.c_str(), std::ios::binary);
+
+         // Write the signature from the file
+         signatureFile << digitalSignature;
+
+         // Close the signature file 
+         signatureFile.close();
       }
       else {
          std::cout << "\n"<<"Need to verify the doc.\n";
