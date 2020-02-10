@@ -23,7 +23,7 @@ BigUnsigned createPrime();
 
 // Pre: This function acccepts in the phi, e, divisor, x, & y values
 // Post: This function will find the correct e value and set the x & y values used to find d
-void generateE(BigInteger &phi, BigInteger &e, BigInteger &divisor, BigInteger &x, BigInteger &y);
+void generateE(BigUnsigned &phi, BigUnsigned &e, BigInteger &divisor, BigInteger &x, BigInteger &y);
 
 int main(){
 	/* The library throws 'const char *' error messages when things go
@@ -72,10 +72,11 @@ int main(){
       std::cout << nNumber << std::endl;
 
       // This is phi of n
-      BigInteger phiOfn = (pNumber - 1) * (qNumber - 1);
+      BigUnsigned phiOfn = (pNumber - 1) * (qNumber - 1);
 
       // Create e, divisor, x, & y
-      BigInteger e = 0, divisor = 0, x = 0, y = 0;
+      BigInteger divisor = 0, x = 0, y = 0;
+      BigUnsigned e = 0;
 
       // Generate the e value
       generateE(phiOfn, e, divisor, x, y);
@@ -89,20 +90,21 @@ int main(){
       std::cout << e << std::endl;
       std::cout << "Phi of N: " << std::endl;
       std::cout << phiOfn << std::endl;
-      std::cout << "D: " << std::endl;
-      std::cout << y << std::endl;
 
-      std::cout << "X: " << std::endl;
-      std::cout << x << std::endl;
+      // Get the d value
+      BigUnsigned d = modinv(e, phiOfn);
+
+      std::cout << "D: " << std::endl;
+      std::cout << d << std::endl;
 
       std::cout << "TEST 1: " << std::endl;
-      std::cout << (e * y) % phiOfn << std::endl;
+      std::cout << (e * d) % phiOfn << std::endl;
 
       std::cout << "TEST 2: " << std::endl;
-      std::cout << x * phiOfn + y * e << std::endl;
+      std::cout << x * phiOfn + d * e << std::endl;
 
       // Write d & n to the dn file
-      dnFile << y << "\n";
+      dnFile << d << "\n";
       dnFile << nNumber << "\n";
 
       // Close the files
@@ -190,10 +192,10 @@ BigUnsigned createPrime()
 
 // Pre: This function acccepts in the phi, e, divisor, x, & y values
 // Post: This function will find the correct e value and set the x & y values used to find d
-void generateE(BigInteger &phi, BigInteger &e, BigInteger &divisor, BigInteger &x, BigInteger &y)
+void generateE(BigUnsigned &phi, BigUnsigned &e, BigInteger &divisor, BigInteger &x, BigInteger &y)
 {
    // Set e's initial value
-   e = 7;
+   e = 151;
 
    // Find the correct e value that is relatively prime to phi
    while (divisor != 1)
