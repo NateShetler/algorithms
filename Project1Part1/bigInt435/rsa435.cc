@@ -48,9 +48,6 @@ int main(){
       BigUnsigned pNumber;
       pNumber = createPrime();
 
-      std::cout << "This is P:" << std::endl;
-      std::cout << pNumber << std::endl;
-
       // Write pNumber to pqFile 
       pqFile << pNumber << "\n";
 
@@ -58,22 +55,22 @@ int main(){
       BigUnsigned qNumber;
       qNumber = createPrime();
 
-      std::cout << "This is Q:" << std::endl;
-      std::cout << qNumber << std::endl;
-
       // Write qNumber to pqFile 
       pqFile << qNumber << "\n";
 
-      // Output N formula
-      std::cout << "N = P * Q:" << std::endl;
+      // Output that P & Q have been generated
+      std::cout << "The p & q values have been generated and stored to the p_q.txt file." << std::endl;
 
-      // Generating N & outputting it
+      // Generating N 
       BigUnsigned nNumber = pNumber * qNumber;
-      std::cout << nNumber << std::endl;
+
+      // Output that N has been generated
+      std::cout << "The n value has been calculated." << std::endl;
 
       // This is phi of n
       BigUnsigned phiOfn = (pNumber - 1) * (qNumber - 1);
 
+      // Create e variable
       BigUnsigned e = 0;
 
       // Generate the e value
@@ -83,24 +80,18 @@ int main(){
       enFile << e << "\n";
       enFile << nNumber << "\n";
 
-      // Output e, phi, and d
-      std::cout << "E: " << std::endl;
-      std::cout << e << std::endl;
-      std::cout << "Phi of N: " << std::endl;
-      std::cout << phiOfn << std::endl;
+      // Output that e has been generated
+      std::cout << "The e value has been generated, and e & n have been stored in the e_n.txt file." << std::endl;
 
       // Get the d value
       BigUnsigned d = modinv(e, phiOfn);
 
-      std::cout << "D: " << std::endl;
-      std::cout << d << std::endl;
-
-      std::cout << "TEST 1: " << std::endl;
-      std::cout << (e * d) % phiOfn << std::endl;
-
       // Write d & n to the dn file
       dnFile << d << "\n";
       dnFile << nNumber << "\n";
+
+      // Output that d has been generated
+      std::cout << "The d value has been generated, and d & n have been stored in the d_n.txt file." << std::endl;
 
       // Close the files
       pqFile.close();
