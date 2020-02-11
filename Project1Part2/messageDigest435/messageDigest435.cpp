@@ -12,25 +12,13 @@
  
 int main(int argc, char *argv[])
 {
-   //demonstrating how sha256 works
-   std::string input = "testing";
-   std::string output1 = sha256(input);
-   std::cout << "sha256('"<< input << "'):" << output1 << "\n";
    
-   //demo bigInt works here
-   BigUnsigned a = stringToBigUnsigned("124338907642982722929222542626327282");
-   BigUnsigned b = stringToBigUnsigned("124338907642977775546469426263278643");
-   std::cout << "big a = " <<a<<"\n";
-   std::cout << "big b = " <<b<<"\n";
-   std::cout << "big a*b = " <<a*b<<"\n";
-
    //Second part of your project starts here
    if (argc != 3 || (argv[1][0]!='s' && argv[1][0]!='v')) 
       std::cout << "wrong format! should be \"a.exe s filename\"";
    else {
       std::string filename = argv[2];
       
-            
       //read the file
       std::streampos begin,end;
       std::ifstream myfile (filename.c_str(), std::ios::binary);
@@ -44,17 +32,8 @@ int main(int argc, char *argv[])
       char * memblock = new char[size];
       myfile.read (memblock, size); //read file; it's saved in the char array memblock
       myfile.close();
-      
-      std::string copyOFfile = filename+".Copy"; 
-      std::ofstream myfile2 (copyOFfile.c_str(), std::ios::binary);
-      myfile2.write (memblock, size); //write to a file
-      myfile2.close();
-      
-      //std::cout << memblock << std::endl;
         
       if (argv[1][0]=='s') {
-         std::cout << "\n"<<"Need to sign the doc.\n";
-         //.....
          
          // Create infile
          std::ifstream dnFile;
@@ -70,20 +49,18 @@ int main(int argc, char *argv[])
          std::string nValue;
          std::getline(dnFile, nValue);
 
-         ///////////////////////////////////////////////////////////////////
-         std::cout << "Before hash" << std::endl;
-
          // Use sha256 to create the hash value
          std::string sha256SignValue = sha256(memblock);
 
-         ///////////////////////////////////////////////////////////////////
-         std::cout << "After hash" << std::endl;
+         // output the sha256 value from sha256
+         std::cout << sha256SignValue << std::endl;
 
-         // Convert to big integer
-         BigInteger sha256Number = stringToBigInteger(sha256SignValue);
+         // Convert the string numbers to BigUnsigned numbers
+         BigUnsigned sha256Number = BigUnsignedInABase(sha256SignValue, 16);
          BigUnsigned dNumber = stringToBigUnsigned(dValue);
          BigUnsigned nNumber = stringToBigUnsigned(nValue);
 
+         // Create the digital signature
          BigUnsigned digitalSignature = modexp(sha256Number, dNumber, nNumber);
 
          // Create new signature file
@@ -95,13 +72,78 @@ int main(int argc, char *argv[])
          // Write the signature from the file
          signatureFile << digitalSignature;
 
-         // Close the signature file 
+         // Output that the file has been signed
+         std::cout << "The file has been signed." << std::endl;
+
+         // Close the signature & dn files 
          signatureFile.close();
+         dnFile.close();
+
       }
       else {
-         std::cout << "\n"<<"Need to verify the doc.\n";
-         //.....
          
+         // Create infiles
+         std::ifstream dnFile, signatureFile, enFile;
+         
+         // Open the file
+         dnFile.open("d_n.txt");
+
+         // Open the en file
+         enFile.open("e_n.txt");
+
+         // Get the e value
+         std::string eValue;
+         std::getline(enFile, eValue);
+
+         // Get the d value
+         std::string dValue;
+         std::getline(dnFile, dValue);
+
+         // Get the n value
+         std::string nValue;
+         std::getline(dnFile, nValue);
+
+         // Convert e, d, & n to BigUnsigned
+         BigUnsigned eNumber = stringToBigUnsigned(eValue);
+         BigUnsigned dNumber = stringToBigUnsigned(dValue);
+         BigUnsigned nNumber = stringToBigUnsigned(nValue);
+
+         // Use sha256 to create the hash value
+         std::string sha256SignValue = sha256(memblock);
+
+         // Convert to BigUnsigned
+         BigUnsigned sha256Number = BigUnsignedInABase(sha256SignValue, 16);
+
+         // Open the signature file
+         signatureFile.open("file.txt.signature");
+
+         // Get the signature and put it in string
+         std::string signature;
+         std::getline(signatureFile, signature);
+
+         // Convert string to BigUnsigned
+         BigUnsigned signatureNumber = stringToBigUnsigned(signature);
+
+         // Encrypt signature using e
+         BigUnsigned encryptedSignature = modexp(signatureNumber, eNumber, nNumber);
+
+         std::cout << "Sha256 Number: \n" << sha256Number << std::endl;
+         std::cout << "Encrypted Signature: \n" << encryptedSignature << std::endl;
+         
+         // Check to see if the file is authentic or if it has been modified
+         if (sha256Number == encryptedSignature)
+         {
+            std::cout << "The file has been verified and it is authentic." << std::endl;
+         }
+         else
+         {
+            std::cout << "The file has been modified" << std::endl;
+         }
+
+         // Close the files
+         dnFile.close();
+         enFile.close();
+         signatureFile.close();
       }
       delete[] memblock;
     }

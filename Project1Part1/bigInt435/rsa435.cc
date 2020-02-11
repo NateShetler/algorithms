@@ -23,7 +23,7 @@ BigUnsigned createPrime();
 
 // Pre: This function acccepts in the phi, e, divisor, x, & y values
 // Post: This function will find the correct e value and set the x & y values used to find d
-void generateE(BigUnsigned &phi, BigUnsigned &e, BigInteger &divisor, BigInteger &x, BigInteger &y);
+void generateE(BigUnsigned &phi, BigUnsigned &e);
 
 int main(){
 	/* The library throws 'const char *' error messages when things go
@@ -74,12 +74,10 @@ int main(){
       // This is phi of n
       BigUnsigned phiOfn = (pNumber - 1) * (qNumber - 1);
 
-      // Create e, divisor, x, & y
-      BigInteger divisor = 0, x = 0, y = 0;
       BigUnsigned e = 0;
 
       // Generate the e value
-      generateE(phiOfn, e, divisor, x, y);
+      generateE(phiOfn, e);
 
       // Write e & n to the en file
       enFile << e << "\n";
@@ -99,9 +97,6 @@ int main(){
 
       std::cout << "TEST 1: " << std::endl;
       std::cout << (e * d) % phiOfn << std::endl;
-
-      std::cout << "TEST 2: " << std::endl;
-      std::cout << x * phiOfn + d * e << std::endl;
 
       // Write d & n to the dn file
       dnFile << d << "\n";
@@ -192,8 +187,11 @@ BigUnsigned createPrime()
 
 // Pre: This function acccepts in the phi, e, divisor, x, & y values
 // Post: This function will find the correct e value and set the x & y values used to find d
-void generateE(BigUnsigned &phi, BigUnsigned &e, BigInteger &divisor, BigInteger &x, BigInteger &y)
+void generateE(BigUnsigned &phi, BigUnsigned &e)
 {
+   // Create e, divisor, x, & y
+   BigInteger divisor = 0, x = 0, y = 0;
+
    // Set e's initial value
    e = 151;
 
