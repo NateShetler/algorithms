@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.0)
+set(CMAKE_CXX_STANDARD 11)   
+project(convexHull435)
+include_directories(include)
+file(GLOB SOURCES "convexHull435.cpp")
+add_executable(convexHull435 ${SOURCES})
