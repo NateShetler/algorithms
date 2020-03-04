@@ -364,7 +364,6 @@ int main(int argc, char *argv[])
 
           point = {xNum, yNum};
           pointsVec.push_back(point);
-          std::cout << xNum << " " << yNum << std::endl;
       }
       
       // Close the file
