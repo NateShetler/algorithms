@@ -344,6 +344,7 @@ void quickConvexHull(iPair a[], int n,  std::vector<Point> &quickList)
     int xTotal = 0, yTotal = 0, numPoints = 0;
 
     std::cout << "The points of Convex Hull have been found.\n"; 
+
     while (!hull.empty()) 
     { 
         // Add to the x and y totals
