@@ -10,12 +10,15 @@
 #include <stack>
 #include <fstream>
 #include <vector>
-#include<bits/stdc++.h> 
+#include <bits/stdc++.h> 
+#include <cmath>
 
 // ----------------------------------------------------------------------------------------
 // The following block of code has been adapted from the code found at: https://www.geeksforgeeks.org 
 // and https://www.geeksforgeeks.org/convex-hull-set-2-graham-scan/
+// It is used in the graham scann and jarvis march implementations
 
+// A structure for a point
 struct Point 
 { 
     int x, y; 
@@ -79,6 +82,9 @@ int compare(const void *vp1, const void *vp2)
   
    return (o == 2)? -1: 1; 
 } 
+// This is the end of the basic functions and structures that will be used later in 
+// the various implementations of finding the convex hull
+//--------------------------------------------------------------------------------
 
 // -------------------------------------------------------------------------------
 // This is the graham scan algorithm adapted from: https://www.geeksforgeeks.org/convex-hull-set-2-graham-scan/
@@ -162,6 +168,8 @@ void grahamConvexHull(Point points[], int n, std::vector<Point> &grahamScanList)
        S.pop(); 
    } 
 }
+// End of the graham scan implementation
+//------------------------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------------
 // This is the jarvis march algorithm adapted from: https://www.geeksforgeeks.org/convex-hull-set-1-jarviss-algorithm-or-wrapping/
@@ -222,6 +230,8 @@ void jarvisConvexHull(Point points[], int n, std::vector<Point> &jarvisList)
     } 
 
 } 
+// End of the jarvis march implementation
+//------------------------------------------------------------------------------------------
 
 // -------------------------------------------------------------------------------
 // This is the quickhull algorithm adapted from: https://www.geeksforgeeks.org/quickhull-algorithm-convex-hull/
@@ -231,7 +241,10 @@ void jarvisConvexHull(Point points[], int n, std::vector<Point> &jarvisList)
   
 // Stores the result (points of convex hull) 
 std::set<iPair> hull; 
-  
+
+// A global point for the average
+Point averagePoint;
+
 // Returns the side of point p with respect to line 
 // joining points p1 and p2. 
 int findSide(iPair p1, iPair p2, iPair p) 
@@ -254,7 +267,15 @@ int lineDist(iPair p1, iPair p2, iPair p)
     return abs ((p.second - p1.second) * (p2.first - p1.first) - 
                (p2.second - p1.second) * (p.first - p1.first)); 
 } 
-  
+
+// This will compare the two points
+// The implementation for this function is adapted from the code at: 
+// https://stackoverflow.com/questions/53072989/sort-2d-points-counter-clockwise
+bool pointComparison(Point point1, Point point2)
+{
+    return (std::atan2(averagePoint.y - point1.y, averagePoint.x - point1.x) * 180 / 3.14159) < (std::atan2(averagePoint.y - point2.y, averagePoint.x - point2.x) * 180 / 3.14159);
+}
+
 // End points of line L are p1 and p2.  side can have value 
 // 1 or -1 specifying each of the parts made by the line L 
 void quickHull(iPair a[], int n, iPair p1, iPair p2, int side) 
@@ -287,7 +308,8 @@ void quickHull(iPair a[], int n, iPair p1, iPair p2, int side)
     quickHull(a, n, a[ind], p1, -findSide(a[ind], p1, p2)); 
     quickHull(a, n, a[ind], p2, -findSide(a[ind], p2, p1)); 
 } 
-  
+
+// This function creates the final quickhull convex hall
 void quickConvexHull(iPair a[], int n,  std::vector<Point> &quickList) 
 { 
     // a[i].second -> y-coordinate of the ith point 
@@ -317,21 +339,38 @@ void quickConvexHull(iPair a[], int n,  std::vector<Point> &quickList)
     // other side of line joining a[min_x] and 
     // a[max_x] 
     quickHull(a, n, a[min_x], a[max_x], -1); 
-  
+    
+    // Used for totalling up the x and y values
+    int xTotal = 0, yTotal = 0, numPoints = 0;
+
     std::cout << "The points in Convex Hull are:\n"; 
     while (!hull.empty()) 
     { 
         std::cout << "(" <<( *hull.begin()).first << ", " << (*hull.begin()).second << ") \n"; 
         
+        xTotal += (*hull.begin()).first;
+        yTotal += (*hull.begin()).second;
         // Put the point on the convex hull
         quickList.push_back({(*hull.begin()).first, (*hull.begin()).second});
 
         hull.erase(hull.begin()); 
+
+        ++numPoints;
     } 
+
+    // Set averagePoints values for x and y
+    averagePoint.x = xTotal / numPoints;
+    averagePoint.y = yTotal / numPoints;
+
+    // This will sort the points in the hull and prevent them from zigzagging
+    std::sort(quickList.begin(), quickList.end(), pointComparison);
 }
 
+// End of the quickhull implementation
+//------------------------------------------------------------------------------------------
+
 // -------------------------------------------------------------------------------
-// The following code is devoloped using the program template provided to us by Dr. Duan
+// The following code was developed using the program template provided to us by Dr. Duan
 
 int main(int argc, char *argv[])
 {   
@@ -427,6 +466,7 @@ int main(int argc, char *argv[])
 
          // Create the quickhull convexHull and fill it
          quickConvexHull(quickList, n, convexHull);
+    
       }
       
       // Create the ofstream object and open output file
@@ -447,7 +487,7 @@ int main(int argc, char *argv[])
          
          outFile << "\n";
       }
-      //you should be able to visulize your convex hull using the "ConvexHull_GUI" program.
+      
 	}
 	return 0;
 }

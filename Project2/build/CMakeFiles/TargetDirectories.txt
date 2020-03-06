@@ -1,3 +1,0 @@
-/mnt/c/Users/nates/OneDrive/Documents/vscode/algorithms/algorithms/Project2/build/CMakeFiles/rebuild_cache.dir
-/mnt/c/Users/nates/OneDrive/Documents/vscode/algorithms/algorithms/Project2/build/CMakeFiles/convexHull435.dir
-/mnt/c/Users/nates/OneDrive/Documents/vscode/algorithms/algorithms/Project2/build/CMakeFiles/edit_cache.dir
