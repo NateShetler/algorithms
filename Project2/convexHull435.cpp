@@ -155,12 +155,13 @@ void grahamConvexHull(Point points[], int n, std::vector<Point> &grahamScanList)
          S.pop(); 
       S.push(points[i]); 
    } 
-  
-   // Now stack has the output points, print contents of stack 
+
+   std::cout << "The points of the Convex Hull have been found.\n";
+   
+   // Now stack has the output points, put them in the grahamScan convex hull list 
    while (!S.empty()) 
    { 
        Point p = S.top(); 
-       std::cout << "(" << p.x << ", " << p.y <<")" << std::endl; 
 
        // Put the point on the vector
        grahamScanList.push_back(p);
@@ -219,14 +220,13 @@ void jarvisConvexHull(Point points[], int n, std::vector<Point> &jarvisList)
   
     } while (p != l);  // While we don't come to first point 
   
-    // Print Result 
+    std::cout << "The point of the Convex Hull have been found.\n";
+
+    // Fill the convexHull list 
     for (int i = 0; i < hull.size(); i++)
     {
        // Put the point on the vector
        jarvisList.push_back(hull[i]);
-
-       // Output the point
-       std::cout << "(" << hull[i].x << ", " << hull[i].y << ")\n";
     } 
 
 } 
@@ -343,11 +343,10 @@ void quickConvexHull(iPair a[], int n,  std::vector<Point> &quickList)
     // Used for totalling up the x and y values
     int xTotal = 0, yTotal = 0, numPoints = 0;
 
-    std::cout << "The points in Convex Hull are:\n"; 
+    std::cout << "The points of Convex Hull have been found.\n"; 
     while (!hull.empty()) 
     { 
-        std::cout << "(" <<( *hull.begin()).first << ", " << (*hull.begin()).second << ") \n"; 
-        
+        // Add to the x and y totals
         xTotal += (*hull.begin()).first;
         yTotal += (*hull.begin()).second;
         // Put the point on the convex hull
