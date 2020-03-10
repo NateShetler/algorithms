@@ -428,7 +428,7 @@ int main(int argc, char *argv[])
 
          // Create the n (number of points) that is needed for the grahamConvexHall function
          int n = sizeof(points)/sizeof(points[0]);
-
+        
          // Create the graham scan convexHull and fill it
          grahamConvexHull(points, n, convexHull);
          
