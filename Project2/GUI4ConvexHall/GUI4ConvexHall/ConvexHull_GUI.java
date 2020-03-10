@@ -262,7 +262,7 @@ public class ConvexHull_GUI extends JPanel
    
    public static void main(String[] args) {
       ConvexHull_GUI CH = new ConvexHull_GUI();
-      boolean generateData = true;
+      boolean generateData = false;
       if (generateData){
          CH.testFileGen("test.txt", "triangle", 320000); //generate data points
          System.out.println("done");
