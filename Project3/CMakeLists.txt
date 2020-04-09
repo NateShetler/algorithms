@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.0)
+set(CMAKE_CXX_STANDARD 11)   
+project(nshetler_project3)
+include_directories(include)
+file(GLOB SOURCES "nshetler_project3.cpp")
+add_executable(nshetler_project3 ${SOURCES})
