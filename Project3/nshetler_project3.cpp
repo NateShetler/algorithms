@@ -11,8 +11,15 @@
 #include <vector>
 #include <cmath>
 
-// This will be used to get the information from the file
+// Pre: This function will accept in an ifstream, and variables for storing information recieved from the file
+// Post: This function will set the variable based on the information recieved from the file and also fill the matrix
+// with the numbers from the file
 std::vector<std::vector<int>> getFileData(std::ifstream &imageFile, int &fileHorizontal, int &fileVertical, int &maxGrayscale);
+
+// Pre: This function will accept in the horizontal and vertical values obtained from the file.
+// It will also accept the vector (matrix) of the numbers from the file and vector (matrix) for storing the energy values
+// Post: This function will fill the energy matrix
+void createEnergyMatrix(int &fileHorizontal, int &fileVertical, std::vector<std::vector<int>> &energyNumbers, std::vector<std::vector<int>> &fileNumbers);
 
 int main(int argc, char *argv[])
 {   
@@ -45,6 +52,13 @@ int main(int argc, char *argv[])
 
             // Get the information from the file
             fileNumbers = getFileData(imageFile, fileHorizontal, fileVertical, maxGrayscale);
+
+            // Vector for holding energy calculations
+            std::vector<std::vector<int>> energyNumbers(fileNumbers);
+
+            // Get the energy matrix
+            createEnergyMatrix(fileHorizontal, fileVertical, energyNumbers, fileNumbers);
+
         }
         else
         {
@@ -56,7 +70,8 @@ int main(int argc, char *argv[])
 }
 
 // Pre: This function will accept in an ifstream, and variables for storing information recieved from the file
-// Post: This function will set the variable based on the information recieved from the file
+// Post: This function will set the variable based on the information recieved from the file and also fill the matrix
+// with the numbers from the file
 std::vector<std::vector<int>> getFileData(std::ifstream &imageFile, int &fileHorizontal, int &fileVertical, int &maxGrayscale)
 {
     // String for holding line of input
@@ -77,15 +92,15 @@ std::vector<std::vector<int>> getFileData(std::ifstream &imageFile, int &fileHor
         imageFile >> fileHorizontal >> fileVertical;
         
         // Vector for reading in the other values in the file
-        std::vector<std::vector<int>> fileNumbers(fileHorizontal, std::vector<int>(fileVertical, 0));
+        std::vector<std::vector<int>> fileNumbers(fileVertical, std::vector<int>(fileHorizontal, 0));
 
         // Get max grayscale value
         imageFile >> maxGrayscale;
         
         // Get all of the numbers from the file and store in fileNumbers matrix
-        for (int i = 0; i < fileHorizontal; ++i)
+        for (int i = 0; i < fileVertical; ++i)
         {
-            for (int j = 0; j < fileVertical; ++j)
+            for (int j = 0; j < fileHorizontal; ++j)
             { 
                 imageFile >> fileNumbers[i][j];
             }
@@ -97,9 +112,9 @@ std::vector<std::vector<int>> getFileData(std::ifstream &imageFile, int &fileHor
         std::cout << "Max Grayscale value: " << maxGrayscale << std::endl;
 
         std::cout << "Contents of the file: " << std::endl;
-        for (int i = 0; i < fileHorizontal; ++i)
+        for (int i = 0; i < fileVertical; ++i)
         {
-            for (int j = 0; j < fileVertical; ++j)
+            for (int j = 0; j < fileHorizontal; ++j)
             {
                 std::cout << fileNumbers[i][j] << " ";
             }
@@ -112,4 +127,117 @@ std::vector<std::vector<int>> getFileData(std::ifstream &imageFile, int &fileHor
     {
         std::cout << "The file is not in the correct format" << std::endl;
     }
+}
+
+// Pre: This function will accept in the horizontal and vertical values obtained from the file.
+// It will also accept the vector (matrix) of the numbers from the file and vector (matrix) for storing the energy values
+// Post: This function will fill the energy matrix
+void createEnergyMatrix(int &fileHorizontal, int &fileVertical, std::vector<std::vector<int>> &energyNumbers, std::vector<std::vector<int>> &fileNumbers)
+{
+    // For keeping track of difference in x and y
+    int diffX = 0;
+    int diffY = 0;
+
+    for (int i = 0; i < fileVertical; ++i)
+    {
+        for (int j = 0; j < fileHorizontal; ++j)
+        {   
+            
+            if (j == 0  && i == 0) // This handles the top left corner
+            {
+                // Set difference in x and y
+                diffX = std::abs(fileNumbers[i][j] - fileNumbers[i][j + 1]);
+                diffY = std::abs(fileNumbers[i + 1][j] - fileNumbers[i][j]);
+
+                // Set the energy 
+                energyNumbers[i][j] = diffX + diffY; 
+            }
+            else if ((j == fileHorizontal - 1) && i == 0) // This handles the top right corner
+            {
+                diffX = std::abs(fileNumbers[i][j - 1] - fileNumbers[i][j]);
+                diffY = std::abs(fileNumbers[i + 1][j] - fileNumbers[i][j]);
+
+                // Set the energy 
+                energyNumbers[i][j] = diffX + diffY; 
+            }
+            else if ((j == 0) && (i == fileVertical - 1)) // This handles the bottom left corner
+            {
+                // Set difference in x and y
+                diffX = std::abs(fileNumbers[i][j] - fileNumbers[i][j + 1]);
+                diffY = std::abs(fileNumbers[i - 1][j] - fileNumbers[i][j]);
+
+                // Set the energy 
+                energyNumbers[i][j] = diffX + diffY; 
+            }
+            else if ((j == fileHorizontal - 1) && (i == fileVertical - 1)) // This handles the bottom right corner
+            {
+                // Set difference in x and y
+                diffX = std::abs(fileNumbers[i][j] - fileNumbers[i][j - 1]);
+                diffY = std::abs(fileNumbers[i - 1][j] - fileNumbers[i][j]);
+
+                // Set the energy 
+                energyNumbers[i][j] = diffX + diffY; 
+            }
+            else if ((j != 0) && (j != fileHorizontal - 1) && (i != 0) && (i != fileVertical - 1)) // This handles the bulk of the numbers (anything not on edges)
+            {
+                // Set difference in x and y
+                diffX = std::abs(fileNumbers[i][j - 1] - fileNumbers[i][j]) + std::abs(fileNumbers[i][j] - fileNumbers[i][j + 1]);
+                diffY = std::abs(fileNumbers[i - 1][j] - fileNumbers[i][j]) + std::abs(fileNumbers[i + 1][j] - fileNumbers[i][j]);
+
+                // Set the energy 
+                energyNumbers[i][j] = diffX + diffY; 
+
+            }
+            else if (j == 0) // Handles the left side (not corner)
+            {
+                // Set difference in x and y
+                diffX = std::abs(fileNumbers[i][j] - fileNumbers[i][j + 1]);
+                diffY = std::abs(fileNumbers[i - 1][j] - fileNumbers[i][j]) + std::abs(fileNumbers[i + 1][j] - fileNumbers[i][j]);
+
+                // Set the energy 
+                energyNumbers[i][j] = diffX + diffY;
+
+            }
+            else if (j == fileHorizontal - 1) // Handles the right side (not corner)
+            {
+                // Set difference in x and y
+                diffX = std::abs(fileNumbers[i][j - 1] - fileNumbers[i][j]);
+                diffY = std::abs(fileNumbers[i - 1][j] - fileNumbers[i][j]) + std::abs(fileNumbers[i + 1][j] - fileNumbers[i][j]);
+
+                // Set the energy 
+                energyNumbers[i][j] = diffX + diffY;
+            }
+            else if (i == 0) // This handles the top (not corner)
+            {
+                // Set difference in x and y
+                diffX = std::abs(fileNumbers[i][j - 1] - fileNumbers[i][j]) + std::abs(fileNumbers[i][j] - fileNumbers[i][j + 1]);
+                diffY = std::abs(fileNumbers[i + 1][j] - fileNumbers[i][j]);
+
+                // Set the energy 
+                energyNumbers[i][j] = diffX + diffY;
+            }
+            else if (i == fileVertical - 1) // This handles the bottom (not corner)
+            {
+                // Set difference in x and y
+                diffX = std::abs(fileNumbers[i][j - 1] - fileNumbers[i][j]) + std::abs(fileNumbers[i][j] - fileNumbers[i][j + 1]);
+                diffY = std::abs(fileNumbers[i - 1][j] - fileNumbers[i][j]);
+
+                // Set the energy 
+                energyNumbers[i][j] = diffX + diffY;
+            }
+        }
+    }
+
+    
+    std::cout << "Energy matrix: " << std::endl;
+    // Print out energy matrix
+    for (int i = 0; i < fileVertical; ++i)
+    {
+        for (int j = 0; j < fileHorizontal; ++j)
+        {
+            std::cout << energyNumbers[i][j] << " ";
+        }
+        std::cout << std::endl;
+    } 
+    
 }
