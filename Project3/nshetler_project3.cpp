@@ -21,6 +21,11 @@ std::vector<std::vector<int>> getFileData(std::ifstream &imageFile, int &fileHor
 // Post: This function will fill the energy matrix
 void createEnergyMatrix(int &fileHorizontal, int &fileVertical, std::vector<std::vector<int>> &energyNumbers, std::vector<std::vector<int>> &fileNumbers);
 
+// Pre: This function will accept in the horizontal and vertical values obtained from the file.
+// It will also accept the vector (matrix) of the energy values and vector (matrix) for storing the cumulative energy values
+// Post: This function will fill the cumulative energy matrix
+void createCumulativeEnergy(int &fileHorizontal, int &fileVertical, std::vector<std::vector<int>> &energyNumbers, std::vector<std::vector<int>> &cumulativeEnergy);
+
 int main(int argc, char *argv[])
 {   
     if (argc < 4 || argc > 4)
@@ -59,6 +64,10 @@ int main(int argc, char *argv[])
             // Get the energy matrix
             createEnergyMatrix(fileHorizontal, fileVertical, energyNumbers, fileNumbers);
 
+            // Vector for holding cumulative energy calculations
+            std::vector<std::vector<int>> cumulativeEnergy(energyNumbers);
+
+            createCumulativeEnergy(fileHorizontal, fileVertical, energyNumbers, cumulativeEnergy);
         }
         else
         {
@@ -91,7 +100,7 @@ std::vector<std::vector<int>> getFileData(std::ifstream &imageFile, int &fileHor
         // Get the horizontal and vertical values from file
         imageFile >> fileHorizontal >> fileVertical;
         
-        // Vector for reading in the other values in the file
+        // Vector for reading in the other values in the file (Original Image)
         std::vector<std::vector<int>> fileNumbers(fileVertical, std::vector<int>(fileHorizontal, 0));
 
         // Get max grayscale value
@@ -240,4 +249,82 @@ void createEnergyMatrix(int &fileHorizontal, int &fileVertical, std::vector<std:
         std::cout << std::endl;
     } 
     
+}
+
+// Pre: This function will accept in the horizontal and vertical values obtained from the file.
+// It will also accept the vector (matrix) of the energy values and vector (matrix) for storing the cumulative energy values
+// Post: This function will fill the cumulative energy matrix
+void createCumulativeEnergy(int &fileHorizontal, int &fileVertical, std::vector<std::vector<int>> &energyNumbers, std::vector<std::vector<int>> &cumulativeEnergy)
+{
+    // For keeping track of minumum
+    int minNumber = 0;
+
+    // This will create the cumulative energy matrix
+    for (int i = 0; i < fileVertical; ++i)
+    {
+        for (int j = 0; j < fileHorizontal; ++j)
+        {
+            if (i == 0) // Set the first row
+            {
+                cumulativeEnergy[i][j] = energyNumbers[i][j];
+            }
+            else if (j == 0) // This will handle the left hand side
+            {
+                if (cumulativeEnergy[i - 1][j] < cumulativeEnergy[i - 1][j + 1])
+                {
+                    cumulativeEnergy[i][j] += cumulativeEnergy[i - 1][j];
+                }
+                else
+                {
+                    cumulativeEnergy[i][j] += cumulativeEnergy[i - 1][j + 1];
+                }
+            }
+            else if (j == (fileHorizontal - 1)) // This will handle the right hand side
+            {
+                if (cumulativeEnergy[i - 1][j - 1] < cumulativeEnergy[i - 1][j])
+                {
+                    cumulativeEnergy[i][j] += cumulativeEnergy[i - 1][j - 1];
+                }
+                else
+                {
+                    cumulativeEnergy[i][j] += cumulativeEnergy[i - 1][j];
+                }  
+            }
+            else // This will handle everything else in the middle
+            {
+                // This runs through the three options and finds the smallest
+
+                if (cumulativeEnergy[i - 1][j - 1] < cumulativeEnergy[i - 1][j])
+                {
+                    // Smallest is first
+                    cumulativeEnergy[i][j] += cumulativeEnergy[i - 1][j - 1];
+                }
+                else
+                {   
+                    if (cumulativeEnergy[i - 1][j] < cumulativeEnergy[i - 1][j + 1])
+                    {
+                        // Smallest is second
+                        cumulativeEnergy[i][j] += cumulativeEnergy[i - 1][j];
+                    }
+                    else
+                    {
+                        // Smallest is third
+                        cumulativeEnergy[i][j] += cumulativeEnergy[i - 1][j + 1];
+                    }
+                    
+                }
+            }
+        }
+    } 
+
+    std::cout << "Cumulative energy matrix: " << std::endl;
+    // Print out energy matrix
+    for (int i = 0; i < fileVertical; ++i)
+    {
+        for (int j = 0; j < fileHorizontal; ++j)
+        {
+            std::cout << cumulativeEnergy[i][j] << " ";
+        }
+        std::cout << std::endl;
+    } 
 }
