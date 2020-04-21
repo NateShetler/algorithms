@@ -22,15 +22,13 @@
 // with the numbers from the file
 std::vector<std::vector<int>> getFileData(std::ifstream &imageFile, int &fileHorizontal, int &fileVertical, int &maxGrayscale);
 
-// Pre: This function will accept in the horizontal and vertical values obtained from the file.
-// It will also accept the vector (matrix) of the numbers from the file and vector (matrix) for storing the energy values
+// Pre: This function will accept the vector (matrix) of the numbers from the file and vector (matrix) for storing the energy values
 // Post: This function will fill the energy matrix
-void createEnergyMatrix(int &fileHorizontal, int &fileVertical, std::vector<std::vector<int>> &energyNumbers, std::vector<std::vector<int>> &fileNumbers);
+void createEnergyMatrix(std::vector<std::vector<int>> &energyNumbers, std::vector<std::vector<int>> &fileNumbers);
 
-// Pre: This function will accept in the horizontal and vertical values obtained from the file.
-// It will also accept the vector (matrix) of the energy values and vector (matrix) for storing the cumulative energy values
+// Pre: This function will accept the vector (matrix) of the energy values and vector (matrix) for storing the cumulative energy values.
 // Post: This function will fill the cumulative energy matrix
-void createCumulativeEnergy(int &fileHorizontal, int &fileVertical, std::vector<std::vector<int>> &energyNumbers, std::vector<std::vector<int>> &cumulativeEnergy);
+void createCumulativeEnergy(std::vector<std::vector<int>> &energyNumbers, std::vector<std::vector<int>> &cumulativeEnergy);
 
 // Pre: This function will accpet the horizontal and vertical dimensions as well as the vector (matrix)
 // containing the cumulative energy calculations. It will also accept in the vector (matrix) to store the new image data.
@@ -42,6 +40,9 @@ void removeVerticalSeam(int &fileHorizontal, int &fileVertical, std::vector<std:
 // Post: This file will write the data to a file
 void writeImageToFile(int &fileHorizontal, int &fileVertical, std::vector<std::vector<int>> &newImage);
 
+// Pre: This function will accept the image vector (matrix)
+// Post: This function will return the transposed vector (matrix)
+std::vector<std::vector<int>> transposeMatrix(int &fileHorizontal, int &fileVertical, std::vector<std::vector<int>> &newImage);
 
 // END FUNCTION PROTOTYPES
 //--------------------------------------------------------------------------------------------------------------------//
@@ -83,40 +84,82 @@ int main(int argc, char *argv[])
             // Get the information from the file
             fileNumbers = getFileData(imageFile, fileHorizontal, fileVertical, maxGrayscale);
 
-            /*
-            // Vector for holding energy calculations
-            std::vector<std::vector<int>> energyNumbers(fileNumbers);
-
-            // Vector for holding cumulative energy calculations
-            std::vector<std::vector<int>> cumulativeEnergy(energyNumbers);
-            */
-
             // Will hold the new image
             std::vector<std::vector<int>> newImage(fileNumbers);
 
-            // Run the vertical seam removal
-            for (int i = 0; i < numVertical; ++i)
+            if (numVertical > 0)
             {
-                // Vector for holding energy calculations
-                // (Will change size overtime to accommodate removal of seams)
-                std::vector<std::vector<int>> energyNumbers(fileVertical, std::vector<int>(fileHorizontal, 0));
+                // Run the vertical seam removal
+                for (int i = 0; i < numVertical; ++i)
+                {
+                    // Vector for holding energy calculations
+                    // (Will change size overtime to accommodate removal of seams)
+                    std::vector<std::vector<int>> energyNumbers(fileVertical, std::vector<int>(fileHorizontal, 0));
 
-                // Get the energy matrix
-                createEnergyMatrix(fileHorizontal, fileVertical, energyNumbers, fileNumbers);
+                    // Get the energy matrix
+                    createEnergyMatrix(energyNumbers, fileNumbers);
 
-                // Vector for holding cumulative energy calculations
-                // (Will change size overtime to accommodate removal of seams)
-                std::vector<std::vector<int>> cumulativeEnergy(energyNumbers);
+                    // Vector for holding cumulative energy calculations
+                    // (Will change size overtime to accommodate removal of seams)
+                    std::vector<std::vector<int>> cumulativeEnergy(energyNumbers);
 
-                // Get the cumulative energy matrix
-                createCumulativeEnergy(fileHorizontal, fileVertical, energyNumbers, cumulativeEnergy);
+                    // Get the cumulative energy matrix
+                    createCumulativeEnergy(energyNumbers, cumulativeEnergy);
 
-                // Remove the vertical seam
-                removeVerticalSeam(fileHorizontal, fileVertical, cumulativeEnergy, newImage);
+                    // Remove the vertical seam
+                    removeVerticalSeam(fileHorizontal, fileVertical, cumulativeEnergy, newImage);
+                }
             }
             
+
+            // If there are also horizontal seams
+            if (numHorizontal > 0)
+            {
+
+                // Transpose the matrix
+                newImage = transposeMatrix(fileHorizontal, fileVertical, newImage);
+
+                // Print the transposed vector
+                for (int i = 0; i < fileHorizontal; ++i)
+                {
+                    for (int j = 0; j < fileVertical; ++j)
+                    {
+                        std::cout << newImage[i][j] << " ";
+                    }
+                    std::cout << std::endl;
+                }
+                
+
+                for (int i = 0; i < numHorizontal; ++i)
+                {
+
+                    // Vector for holding energy calculations
+                    // (Will change size overtime to accommodate removal of seams)
+                    std::vector<std::vector<int>> energyNumbers(fileHorizontal, std::vector<int>(fileVertical, 0));
+
+                    energyNumbers = transposeMatrix(fileHorizontal, fileVertical, energyNumbers);
+
+                    // Get the energy matrix
+                    createEnergyMatrix(energyNumbers, newImage); 
+
+                    // Vector for holding cumulative energy calculations
+                    // (Will change size overtime to accommodate removal of seams)
+                    std::vector<std::vector<int>> cumulativeEnergy(energyNumbers);  
+
+                    // Get the cumulative energy matrix
+                    createCumulativeEnergy(energyNumbers, cumulativeEnergy);   
+
+                    // Remove the vertical seam
+                    removeVerticalSeam(fileVertical, fileHorizontal, cumulativeEnergy, newImage);
+                }
+
+                // Transpose the matrix back to normal
+                newImage = transposeMatrix(fileHorizontal, fileVertical, newImage);
+            }
+
             // Write the new image to a file
             writeImageToFile(fileHorizontal, fileVertical, newImage);
+            
         }
         else
         {
@@ -189,18 +232,17 @@ std::vector<std::vector<int>> getFileData(std::ifstream &imageFile, int &fileHor
     }
 }
 
-// Pre: This function will accept in the horizontal and vertical values obtained from the file.
-// It will also accept the vector (matrix) of the numbers from the file and vector (matrix) for storing the energy values
+// Pre: This function will accept the vector (matrix) of the numbers from the file and vector (matrix) for storing the energy values
 // Post: This function will fill the energy matrix
-void createEnergyMatrix(int &fileHorizontal, int &fileVertical, std::vector<std::vector<int>> &energyNumbers, std::vector<std::vector<int>> &fileNumbers)
+void createEnergyMatrix(std::vector<std::vector<int>> &energyNumbers, std::vector<std::vector<int>> &fileNumbers)
 {
     // For keeping track of difference in x and y
     int diffX = 0;
     int diffY = 0;
 
-    for (int i = 0; i < fileVertical; ++i)
+    for (int i = 0; i < fileNumbers.size(); ++i)
     {
-        for (int j = 0; j < fileHorizontal; ++j)
+        for (int j = 0; j < fileNumbers[0].size(); ++j)
         {   
             
             if (j == 0  && i == 0) // This handles the top left corner
@@ -212,7 +254,7 @@ void createEnergyMatrix(int &fileHorizontal, int &fileVertical, std::vector<std:
                 // Set the energy 
                 energyNumbers[i][j] = diffX + diffY; 
             }
-            else if ((j == fileHorizontal - 1) && i == 0) // This handles the top right corner
+            else if ((j == fileNumbers[0].size() - 1) && i == 0) // This handles the top right corner
             {
                 diffX = std::abs(fileNumbers[i][j - 1] - fileNumbers[i][j]);
                 diffY = std::abs(fileNumbers[i + 1][j] - fileNumbers[i][j]);
@@ -220,7 +262,7 @@ void createEnergyMatrix(int &fileHorizontal, int &fileVertical, std::vector<std:
                 // Set the energy 
                 energyNumbers[i][j] = diffX + diffY; 
             }
-            else if ((j == 0) && (i == fileVertical - 1)) // This handles the bottom left corner
+            else if ((j == 0) && (i == fileNumbers.size() - 1)) // This handles the bottom left corner
             {
                 // Set difference in x and y
                 diffX = std::abs(fileNumbers[i][j] - fileNumbers[i][j + 1]);
@@ -229,7 +271,7 @@ void createEnergyMatrix(int &fileHorizontal, int &fileVertical, std::vector<std:
                 // Set the energy 
                 energyNumbers[i][j] = diffX + diffY; 
             }
-            else if ((j == fileHorizontal - 1) && (i == fileVertical - 1)) // This handles the bottom right corner
+            else if ((j == fileNumbers[0].size() - 1) && (i == fileNumbers.size() - 1)) // This handles the bottom right corner
             {
                 // Set difference in x and y
                 diffX = std::abs(fileNumbers[i][j] - fileNumbers[i][j - 1]);
@@ -238,7 +280,7 @@ void createEnergyMatrix(int &fileHorizontal, int &fileVertical, std::vector<std:
                 // Set the energy 
                 energyNumbers[i][j] = diffX + diffY; 
             }
-            else if ((j != 0) && (j != fileHorizontal - 1) && (i != 0) && (i != fileVertical - 1)) // This handles the bulk of the numbers (anything not on edges)
+            else if ((j != 0) && (j != fileNumbers[0].size() - 1) && (i != 0) && (i != fileNumbers.size() - 1)) // This handles the bulk of the numbers (anything not on edges)
             {
                 // Set difference in x and y
                 diffX = std::abs(fileNumbers[i][j - 1] - fileNumbers[i][j]) + std::abs(fileNumbers[i][j] - fileNumbers[i][j + 1]);
@@ -258,7 +300,7 @@ void createEnergyMatrix(int &fileHorizontal, int &fileVertical, std::vector<std:
                 energyNumbers[i][j] = diffX + diffY;
 
             }
-            else if (j == fileHorizontal - 1) // Handles the right side (not corner)
+            else if (j == fileNumbers[0].size() - 1) // Handles the right side (not corner)
             {
                 // Set difference in x and y
                 diffX = std::abs(fileNumbers[i][j - 1] - fileNumbers[i][j]);
@@ -276,7 +318,7 @@ void createEnergyMatrix(int &fileHorizontal, int &fileVertical, std::vector<std:
                 // Set the energy 
                 energyNumbers[i][j] = diffX + diffY;
             }
-            else if (i == fileVertical - 1) // This handles the bottom (not corner)
+            else if (i == fileNumbers.size() - 1) // This handles the bottom (not corner)
             {
                 // Set difference in x and y
                 diffX = std::abs(fileNumbers[i][j - 1] - fileNumbers[i][j]) + std::abs(fileNumbers[i][j] - fileNumbers[i][j + 1]);
@@ -291,9 +333,9 @@ void createEnergyMatrix(int &fileHorizontal, int &fileVertical, std::vector<std:
     /*
     std::cout << "Energy matrix: " << std::endl;
     // Print out energy matrix
-    for (int i = 0; i < fileVertical; ++i)
+    for (int i = 0; i < fileNumbers.size(); ++i)
     {
-        for (int j = 0; j < fileHorizontal; ++j)
+        for (int j = 0; j < fileNumbers[0].size(); ++j)
         {
             std::cout << energyNumbers[i][j] << " ";
         }
@@ -301,18 +343,18 @@ void createEnergyMatrix(int &fileHorizontal, int &fileVertical, std::vector<std:
     } 
     */
     
+    
 }
 
-// Pre: This function will accept in the horizontal and vertical values obtained from the file.
-// It will also accept the vector (matrix) of the energy values and vector (matrix) for storing the cumulative energy values
+// Pre: This function will accept the vector (matrix) of the energy values and vector (matrix) for storing the cumulative energy values.
 // Post: This function will fill the cumulative energy matrix
-void createCumulativeEnergy(int &fileHorizontal, int &fileVertical, std::vector<std::vector<int>> &energyNumbers, std::vector<std::vector<int>> &cumulativeEnergy)
+void createCumulativeEnergy(std::vector<std::vector<int>> &energyNumbers, std::vector<std::vector<int>> &cumulativeEnergy)
 {
 
     // This will create the cumulative energy matrix
-    for (int i = 0; i < fileVertical; ++i)
+    for (int i = 0; i < energyNumbers.size(); ++i)
     {
-        for (int j = 0; j < fileHorizontal; ++j)
+        for (int j = 0; j < energyNumbers[0].size(); ++j)
         {
             if (i == 0) // Set the first row
             {
@@ -329,7 +371,7 @@ void createCumulativeEnergy(int &fileHorizontal, int &fileVertical, std::vector<
                     cumulativeEnergy[i][j] += cumulativeEnergy[i - 1][j + 1];
                 }
             }
-            else if (j == (fileHorizontal - 1)) // This will handle the right hand side
+            else if (j == (energyNumbers[0].size() - 1)) // This will handle the right hand side
             {
                 if (cumulativeEnergy[i - 1][j - 1] < cumulativeEnergy[i - 1][j])
                 {
@@ -379,15 +421,16 @@ void createCumulativeEnergy(int &fileHorizontal, int &fileVertical, std::vector<
     /*
     std::cout << "Cumulative energy matrix: " << std::endl;
     // Print out energy matrix
-    for (int i = 0; i < fileVertical; ++i)
+    for (int i = 0; i < energyNumbers.size(); ++i)
     {
-        for (int j = 0; j < fileHorizontal; ++j)
+        for (int j = 0; j < energyNumbers[0].size(); ++j)
         {
             std::cout << cumulativeEnergy[i][j] << " ";
         }
         std::cout << std::endl;
     } 
     */
+    
 }
 
 // Pre: This function will accpet the horizontal and vertical dimensions as well as the vector (matrix)
@@ -416,8 +459,6 @@ void removeVerticalSeam(int &fileHorizontal, int &fileVertical, std::vector<std:
 
         }
     }
-
-    std::cout << cumulativeEnergy.size() << std::endl;
 
     // Add starting index to seam
     indexOfSeam.push_back(startingIndex);
@@ -505,6 +546,7 @@ void removeVerticalSeam(int &fileHorizontal, int &fileVertical, std::vector<std:
         std::cout << std::endl;
     } 
     */
+    
 }
 
 // Pre: This function will take in the horizontal and vertical dimentions and also the vector (matrix) 
@@ -531,4 +573,22 @@ void writeImageToFile(int &fileHorizontal, int &fileVertical, std::vector<std::v
 
         outFile << "\n";
     }
+}
+
+// Pre: This function will accept the image vector (matrix)
+// Post: This function will return the transposed vector (matrix)
+std::vector<std::vector<int>> transposeMatrix(int &fileHorizontal, int &fileVertical, std::vector<std::vector<int>> &newImage)
+{
+    // This will be the transposed vector
+    std::vector<std::vector<int>> transposedMatrix(fileHorizontal, std::vector<int>(fileVertical, 0));
+
+    for (int i = 0; i < newImage.size(); ++i)
+    {
+        for (int j = 0; j < newImage[i].size(); ++j)
+        {
+            transposedMatrix[j][i] = newImage[i][j];
+        }
+    }
+
+    return transposedMatrix;
 }
