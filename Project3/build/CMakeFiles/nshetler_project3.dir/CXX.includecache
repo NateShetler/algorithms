@@ -1,0 +1,24 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/mnt/c/Users/nates/OneDrive/Documents/vscode/algorithms/algorithms/Project3/nshetler_project3.cpp
+string
+-
+iostream
+-
+stdlib.h
+-
+fstream
+-
+vector
+-
+cmath
+-
+utility
+-
+

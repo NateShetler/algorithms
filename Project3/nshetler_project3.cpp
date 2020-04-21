@@ -10,6 +10,12 @@
 #include <fstream>
 #include <vector>
 #include <cmath>
+#include <utility>
+
+
+//--------------------------------------------------------------------------------------------------------------------//
+//FUNCTION PROTOTYPES:
+
 
 // Pre: This function will accept in an ifstream, and variables for storing information recieved from the file
 // Post: This function will set the variable based on the information recieved from the file and also fill the matrix
@@ -26,18 +32,37 @@ void createEnergyMatrix(int &fileHorizontal, int &fileVertical, std::vector<std:
 // Post: This function will fill the cumulative energy matrix
 void createCumulativeEnergy(int &fileHorizontal, int &fileVertical, std::vector<std::vector<int>> &energyNumbers, std::vector<std::vector<int>> &cumulativeEnergy);
 
+// Pre: This function will accpet the horizontal and vertical dimensions as well as the vector (matrix)
+// containing the cumulative energy calculations. It will also accept in the vector (matrix) to store the new image data.
+// Post: This function will fill create the new image by removing the vertical seam.
+void removeVerticalSeam(int &fileHorizontal, int &fileVertical, std::vector<std::vector<int>> &cumulativeEnergy, std::vector<std::vector<int>> &newImage);
+
+// Pre: This function will take in the horizontal and vertical dimentions and also the vector (matrix) 
+// that contains the data for the image.
+// Post: This file will write the data to a file
+void writeImageToFile(int &fileHorizontal, int &fileVertical, std::vector<std::vector<int>> &newImage);
+
+
+// END FUNCTION PROTOTYPES
+//--------------------------------------------------------------------------------------------------------------------//
+
+
 int main(int argc, char *argv[])
 {   
     if (argc < 4 || argc > 4)
     {
-        std::cout << "Wrong format! It should be \"a.exe image.pgm horizontal vertical\"" << std::endl;
+        std::cout << "Wrong format! It should be \"a.exe image.pgm vertical horizontal\"" << std::endl;
     }
    else
    {
         std::string imageFilename = argv[1];
-        std::string xValue = argv[2];
-        std::string yValue = argv[3];
+        std::string numVerticalString = argv[2];
+        std::string numHorizontalString = argv[3];
     	
+        // Convert to integers
+        int numVertical = std::stoi(numVerticalString);
+        int numHorizontal = std::stoi(numHorizontalString);
+
         // File for reading the data
         std::ifstream imageFile;
         imageFile.open(imageFilename.c_str());
@@ -58,16 +83,40 @@ int main(int argc, char *argv[])
             // Get the information from the file
             fileNumbers = getFileData(imageFile, fileHorizontal, fileVertical, maxGrayscale);
 
+            /*
             // Vector for holding energy calculations
             std::vector<std::vector<int>> energyNumbers(fileNumbers);
 
-            // Get the energy matrix
-            createEnergyMatrix(fileHorizontal, fileVertical, energyNumbers, fileNumbers);
-
             // Vector for holding cumulative energy calculations
             std::vector<std::vector<int>> cumulativeEnergy(energyNumbers);
+            */
 
-            createCumulativeEnergy(fileHorizontal, fileVertical, energyNumbers, cumulativeEnergy);
+            // Will hold the new image
+            std::vector<std::vector<int>> newImage(fileNumbers);
+
+            // Run the vertical seam removal
+            for (int i = 0; i < numVertical; ++i)
+            {
+                // Vector for holding energy calculations
+                // (Will change size overtime to accommodate removal of seams)
+                std::vector<std::vector<int>> energyNumbers(fileVertical, std::vector<int>(fileHorizontal, 0));
+
+                // Get the energy matrix
+                createEnergyMatrix(fileHorizontal, fileVertical, energyNumbers, fileNumbers);
+
+                // Vector for holding cumulative energy calculations
+                // (Will change size overtime to accommodate removal of seams)
+                std::vector<std::vector<int>> cumulativeEnergy(energyNumbers);
+
+                // Get the cumulative energy matrix
+                createCumulativeEnergy(fileHorizontal, fileVertical, energyNumbers, cumulativeEnergy);
+
+                // Remove the vertical seam
+                removeVerticalSeam(fileHorizontal, fileVertical, cumulativeEnergy, newImage);
+            }
+            
+            // Write the new image to a file
+            writeImageToFile(fileHorizontal, fileVertical, newImage);
         }
         else
         {
@@ -120,6 +169,7 @@ std::vector<std::vector<int>> getFileData(std::ifstream &imageFile, int &fileHor
         std::cout << "Vertical: " << fileVertical << std::endl;
         std::cout << "Max Grayscale value: " << maxGrayscale << std::endl;
 
+        /*
         std::cout << "Contents of the file: " << std::endl;
         for (int i = 0; i < fileVertical; ++i)
         {
@@ -129,6 +179,7 @@ std::vector<std::vector<int>> getFileData(std::ifstream &imageFile, int &fileHor
             }
             std::cout << std::endl;
         }  
+        */
 
         return fileNumbers;
     }
@@ -237,7 +288,7 @@ void createEnergyMatrix(int &fileHorizontal, int &fileVertical, std::vector<std:
         }
     }
 
-    
+    /*
     std::cout << "Energy matrix: " << std::endl;
     // Print out energy matrix
     for (int i = 0; i < fileVertical; ++i)
@@ -248,6 +299,7 @@ void createEnergyMatrix(int &fileHorizontal, int &fileVertical, std::vector<std:
         }
         std::cout << std::endl;
     } 
+    */
     
 }
 
@@ -256,8 +308,6 @@ void createEnergyMatrix(int &fileHorizontal, int &fileVertical, std::vector<std:
 // Post: This function will fill the cumulative energy matrix
 void createCumulativeEnergy(int &fileHorizontal, int &fileVertical, std::vector<std::vector<int>> &energyNumbers, std::vector<std::vector<int>> &cumulativeEnergy)
 {
-    // For keeping track of minumum
-    int minNumber = 0;
 
     // This will create the cumulative energy matrix
     for (int i = 0; i < fileVertical; ++i)
@@ -296,8 +346,17 @@ void createCumulativeEnergy(int &fileHorizontal, int &fileVertical, std::vector<
 
                 if (cumulativeEnergy[i - 1][j - 1] < cumulativeEnergy[i - 1][j])
                 {
-                    // Smallest is first
-                    cumulativeEnergy[i][j] += cumulativeEnergy[i - 1][j - 1];
+                    if (cumulativeEnergy[i - 1][j - 1] < cumulativeEnergy[i - 1][j + 1])
+                    {
+                        // Smallest is first
+                        cumulativeEnergy[i][j] += cumulativeEnergy[i - 1][j - 1];
+                    }
+                    else
+                    {
+                        // Smallest is last
+                        cumulativeEnergy[i][j] += cumulativeEnergy[i - 1][j + 1];
+                    }
+
                 }
                 else
                 {   
@@ -317,6 +376,7 @@ void createCumulativeEnergy(int &fileHorizontal, int &fileVertical, std::vector<
         }
     } 
 
+    /*
     std::cout << "Cumulative energy matrix: " << std::endl;
     // Print out energy matrix
     for (int i = 0; i < fileVertical; ++i)
@@ -327,4 +387,148 @@ void createCumulativeEnergy(int &fileHorizontal, int &fileVertical, std::vector<
         }
         std::cout << std::endl;
     } 
+    */
+}
+
+// Pre: This function will accpet the horizontal and vertical dimensions as well as the vector (matrix)
+// containing the cumulative energy calculations. It will also accept in the vector (matrix) to store the new image data.
+// Post: This function will fill create the new image by removing the vertical seam.
+void removeVerticalSeam(int &fileHorizontal, int &fileVertical, std::vector<std::vector<int>> &cumulativeEnergy, std::vector<std::vector<int>> &newImage)
+{
+    // For the starting point
+    int startingPoint = cumulativeEnergy[fileVertical - 1][0];
+    std::pair<int,int> startingIndex;
+
+    // Set initial starting point
+    startingIndex.first = fileVertical - 1;
+    startingIndex.second = 0;
+
+    // vector for 
+    std::vector<std::pair<int, int>> indexOfSeam;
+
+    // This will find the min on the bottom row (starting point)
+    for (int i = 0; i < fileHorizontal; ++i)
+    {
+        if (cumulativeEnergy[fileVertical - 1][i] < startingPoint)
+        {
+            startingPoint = cumulativeEnergy[fileVertical - 1][i];
+            startingIndex.second = i;
+
+        }
+    }
+
+    std::cout << cumulativeEnergy.size() << std::endl;
+
+    // Add starting index to seam
+    indexOfSeam.push_back(startingIndex);
+
+    // For getting the next item on the seam
+    std::pair<int, int> nextItem;
+
+    // Go through the rest of the image
+    for (int i = 0; i < fileVertical - 1; ++i)
+    {
+        if ((indexOfSeam.back().second != 0) && (indexOfSeam.back().second != fileHorizontal - 1)) // If the item is in the middle
+        {
+
+            if (cumulativeEnergy[indexOfSeam.back().first - 1][indexOfSeam.back().second - 1] < cumulativeEnergy[indexOfSeam.back().first - 1][indexOfSeam.back().second])
+            {
+                if (cumulativeEnergy[indexOfSeam.back().first - 1][indexOfSeam.back().second - 1] < cumulativeEnergy[indexOfSeam.back().first - 1][indexOfSeam.back().second + 1])
+                {
+                    nextItem.first = indexOfSeam.back().first - 1; 
+                    nextItem.second = indexOfSeam.back().second - 1;
+                }
+                else
+                {
+                    nextItem.first = indexOfSeam.back().first - 1;
+                    nextItem.second = indexOfSeam.back().second + 1;
+                }
+            }
+            
+            // Add next item to seam vector
+            indexOfSeam.push_back(nextItem);
+        }
+        else if (indexOfSeam.back().second == 0) // Check left side
+        {
+
+            if (cumulativeEnergy[indexOfSeam.back().first - 1][indexOfSeam.back().second] < cumulativeEnergy[indexOfSeam.back().first - 1][indexOfSeam.back().second + 1])
+            {
+                nextItem.first = indexOfSeam.back().first - 1;
+                nextItem.second = indexOfSeam.back().second;
+            }
+            else
+            {
+                nextItem.first = indexOfSeam.back().first - 1;
+                nextItem.second = indexOfSeam.back().second + 1;
+            }
+            
+            // Add next item to seam vector
+            indexOfSeam.push_back(nextItem);
+        }
+        else if (indexOfSeam.back().second == fileHorizontal - 1) // check right side
+        {
+            if (cumulativeEnergy[indexOfSeam.back().first - 1][indexOfSeam.back().second - 1] < cumulativeEnergy[indexOfSeam.back().first - 1][indexOfSeam.back().second])
+            {
+                nextItem.first = indexOfSeam.back().first - 1;
+                nextItem.second = indexOfSeam.back().second - 1;
+            }
+            else
+            {
+                nextItem.first = indexOfSeam.back().first - 1;
+                nextItem.second = indexOfSeam.back().second;
+            }
+            
+            // Add next item to seam vector
+            indexOfSeam.push_back(nextItem);
+        }
+    }
+
+    // Remove pixels from image and print them out
+    for (int i = 0; i < indexOfSeam.size(); ++i)
+    {
+        // Remove pixel from image
+        newImage[i].erase(newImage[i].begin() + indexOfSeam[i].second);
+    } 
+
+    // Make the size of the horizontal smaller
+    fileHorizontal -= 1;
+
+    /*
+    std::cout << "New Image matrix: " << std::endl;
+    // Print out new image matrix
+    for (int i = 0; i < fileVertical; ++i)
+    {
+        for (int j = 0; j < fileHorizontal; ++j)
+        {
+            std::cout << newImage[i][j] << " ";
+        }
+        std::cout << std::endl;
+    } 
+    */
+}
+
+// Pre: This function will take in the horizontal and vertical dimentions and also the vector (matrix) 
+// that contains the data for the image.
+// Post: This file will write the data to a file
+void writeImageToFile(int &fileHorizontal, int &fileVertical, std::vector<std::vector<int>> &newImage)
+{
+    std::ofstream outFile("./image_processed.pgm");
+
+    // Write information to file
+    outFile << "P2\n";
+    outFile << "# Created by IrfanView\n";
+    outFile << fileHorizontal << " " << fileVertical << "\n";
+    int grayscale = 255;
+    outFile << grayscale << "\n";
+
+    // Write image to the fiel
+    for (int i = 0; i < fileVertical; ++i)
+    {
+        for (int j = 0; j < fileHorizontal; ++j)
+        {
+            outFile << newImage[i][j] << " ";
+        }
+
+        outFile << "\n";
+    }
 }

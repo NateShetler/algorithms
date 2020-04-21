@@ -1,0 +1,3 @@
+/mnt/c/Users/nates/OneDrive/Documents/vscode/algorithms/algorithms/Project3/build/CMakeFiles/rebuild_cache.dir
+/mnt/c/Users/nates/OneDrive/Documents/vscode/algorithms/algorithms/Project3/build/CMakeFiles/nshetler_project3.dir
+/mnt/c/Users/nates/OneDrive/Documents/vscode/algorithms/algorithms/Project3/build/CMakeFiles/edit_cache.dir
