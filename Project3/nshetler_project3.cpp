@@ -42,7 +42,7 @@ void writeImageToFile(int &fileHorizontal, int &fileVertical, std::vector<std::v
 
 // Pre: This function will accept the image vector (matrix)
 // Post: This function will return the transposed vector (matrix)
-std::vector<std::vector<int>> transposeMatrix(int &fileHorizontal, int &fileVertical, std::vector<std::vector<int>> &newImage);
+std::vector<std::vector<int>> transposeMatrix(std::vector<std::vector<int>> &newImage);
 
 // END FUNCTION PROTOTYPES
 //--------------------------------------------------------------------------------------------------------------------//
@@ -118,19 +118,7 @@ int main(int argc, char *argv[])
             {
 
                 // Transpose the matrix
-                newImage = transposeMatrix(fileHorizontal, fileVertical, newImage);
-
-                /*
-                // Print the transposed vector
-                for (int i = 0; i < fileHorizontal; ++i)
-                {
-                    for (int j = 0; j < fileVertical; ++j)
-                    {
-                        std::cout << newImage[i][j] << " ";
-                    }
-                    std::cout << std::endl;
-                }
-                */
+                newImage = transposeMatrix(newImage);
 
                 for (int i = 0; i < numHorizontal; ++i)
                 {
@@ -138,8 +126,6 @@ int main(int argc, char *argv[])
                     // Vector for holding energy calculations
                     // (Will change size overtime to accommodate removal of seams)
                     std::vector<std::vector<int>> energyNumbers(fileHorizontal, std::vector<int>(fileVertical, 0));
-                    
-                    //energyNumbers = transposeMatrix(fileHorizontal, fileVertical, energyNumbers);
 
                     // Get the energy matrix
                     createEnergyMatrix(energyNumbers, newImage); 
@@ -157,7 +143,7 @@ int main(int argc, char *argv[])
                 }
 
                 // Transpose the matrix back to normal
-                newImage = transposeMatrix(fileHorizontal, fileVertical, newImage);
+                newImage = transposeMatrix(newImage);
 
             }
 
@@ -215,18 +201,6 @@ std::vector<std::vector<int>> getFileData(std::ifstream &imageFile, int &fileHor
         std::cout << "Horizontal: " << fileHorizontal << std::endl;
         std::cout << "Vertical: " << fileVertical << std::endl;
         std::cout << "Max Grayscale value: " << maxGrayscale << std::endl;
-
-        /*
-        std::cout << "Contents of the file: " << std::endl;
-        for (int i = 0; i < fileVertical; ++i)
-        {
-            for (int j = 0; j < fileHorizontal; ++j)
-            {
-                std::cout << fileNumbers[i][j] << " ";
-            }
-            std::cout << std::endl;
-        }  
-        */
 
         return fileNumbers;
     }
@@ -332,21 +306,7 @@ void createEnergyMatrix(std::vector<std::vector<int>> &energyNumbers, std::vecto
                 energyNumbers[i][j] = diffX + diffY;
             }
         }
-    }
-
-    /*
-    std::cout << "Energy matrix: " << std::endl;
-    // Print out energy matrix
-    for (int i = 0; i < fileNumbers.size(); ++i)
-    {
-        for (int j = 0; j < fileNumbers[0].size(); ++j)
-        {
-            std::cout << energyNumbers[i][j] << " ";
-        }
-        std::cout << std::endl;
-    } 
-    */
-    
+    }  
 }
 
 // Pre: This function will accept the vector (matrix) of the energy values and vector (matrix) for storing the cumulative energy values.
@@ -407,21 +367,6 @@ void createCumulativeEnergy(std::vector<std::vector<int>> &energyNumbers, std::v
             }
         }
     } 
-
-    /*
-    std::cout << "Cumulative energy matrix: " << std::endl;
-    // Print out energy matrix
-    for (int i = 0; i < energyNumbers.size(); ++i)
-    {
-        for (int j = 0; j < energyNumbers[0].size(); ++j)
-        {
-            std::cout << cumulativeEnergy[i][j] << " ";
-        }
-        std::cout << std::endl;
-    } 
-    */
-    
-    
 }
 
 // Pre: This function will accpet the horizontal and vertical dimensions as well as the vector (matrix)
@@ -486,6 +431,7 @@ void removeVerticalSeam(int &fileHorizontal, int &fileVertical, std::vector<std:
             
             // Set the index to -1 to mark it to be removed
             newImage[nextItem.first][nextItem.second] = -1;
+
             // Add next item to seam vector
             indexOfSeam.push_back(nextItem);
 
@@ -531,9 +477,6 @@ void removeVerticalSeam(int &fileHorizontal, int &fileVertical, std::vector<std:
         }
     }
 
-    // Size of the seam
-    int sizeOfSeam = indexOfSeam.size();
-
     // Do the deletions of the seam items
     for (int i = 0; i < newImage.size(); ++i)
     {
@@ -548,20 +491,6 @@ void removeVerticalSeam(int &fileHorizontal, int &fileVertical, std::vector<std:
 
     // Make the size of the horizontal smaller
     fileHorizontal -= 1;
-
-    /*
-    std::cout << "New Image matrix: " << std::endl;
-    // Print out new image matrix
-    for (int i = 0; i < newImage.size(); ++i)
-    {
-        for (int j = 0; j < newImage[i].size(); ++j)
-        {
-            std::cout << newImage[i][j] << " ";
-        }
-        std::cout << std::endl;
-    } 
-    */
-    
     
 }
 
@@ -593,7 +522,7 @@ void writeImageToFile(int &fileHorizontal, int &fileVertical, std::vector<std::v
 
 // Pre: This function will accept the image vector (matrix)
 // Post: This function will return the transposed vector (matrix)
-std::vector<std::vector<int>> transposeMatrix(int &fileHorizontal, int &fileVertical, std::vector<std::vector<int>> &newImage)
+std::vector<std::vector<int>> transposeMatrix(std::vector<std::vector<int>> &newImage)
 {   
     // This will be the transposed vector
     std::vector<std::vector<int>> transposedMatrix(newImage[0].size(), std::vector<int>(newImage.size(), 0));
