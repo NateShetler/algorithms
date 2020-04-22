@@ -92,12 +92,13 @@ int main(int argc, char *argv[])
                 // Run the vertical seam removal
                 for (int i = 0; i < numVertical; ++i)
                 {
+
                     // Vector for holding energy calculations
                     // (Will change size overtime to accommodate removal of seams)
                     std::vector<std::vector<int>> energyNumbers(fileVertical, std::vector<int>(fileHorizontal, 0));
 
                     // Get the energy matrix
-                    createEnergyMatrix(energyNumbers, fileNumbers);
+                    createEnergyMatrix(energyNumbers, newImage);
 
                     // Vector for holding cumulative energy calculations
                     // (Will change size overtime to accommodate removal of seams)
@@ -119,6 +120,7 @@ int main(int argc, char *argv[])
                 // Transpose the matrix
                 newImage = transposeMatrix(fileHorizontal, fileVertical, newImage);
 
+                /*
                 // Print the transposed vector
                 for (int i = 0; i < fileHorizontal; ++i)
                 {
@@ -128,16 +130,16 @@ int main(int argc, char *argv[])
                     }
                     std::cout << std::endl;
                 }
-                
+                */
 
                 for (int i = 0; i < numHorizontal; ++i)
                 {
-
+                
                     // Vector for holding energy calculations
                     // (Will change size overtime to accommodate removal of seams)
                     std::vector<std::vector<int>> energyNumbers(fileHorizontal, std::vector<int>(fileVertical, 0));
-
-                    energyNumbers = transposeMatrix(fileHorizontal, fileVertical, energyNumbers);
+                    
+                    //energyNumbers = transposeMatrix(fileHorizontal, fileVertical, energyNumbers);
 
                     // Get the energy matrix
                     createEnergyMatrix(energyNumbers, newImage); 
@@ -148,9 +150,10 @@ int main(int argc, char *argv[])
 
                     // Get the cumulative energy matrix
                     createCumulativeEnergy(energyNumbers, cumulativeEnergy);   
-
+                    
                     // Remove the vertical seam
                     removeVerticalSeam(fileVertical, fileHorizontal, cumulativeEnergy, newImage);
+
                 }
 
                 // Transpose the matrix back to normal
@@ -343,7 +346,6 @@ void createEnergyMatrix(std::vector<std::vector<int>> &energyNumbers, std::vecto
     } 
     */
     
-    
 }
 
 // Pre: This function will accept the vector (matrix) of the energy values and vector (matrix) for storing the cumulative energy values.
@@ -384,36 +386,23 @@ void createCumulativeEnergy(std::vector<std::vector<int>> &energyNumbers, std::v
             }
             else // This will handle everything else in the middle
             {
+
+                // For keeping track of the minimum value
+                int smallIndexFirst = i - 1;
+                int smallIndexSecond = j - 1;
+
                 // This runs through the three options and finds the smallest
-
-                if (cumulativeEnergy[i - 1][j - 1] < cumulativeEnergy[i - 1][j])
-                {
-                    if (cumulativeEnergy[i - 1][j - 1] < cumulativeEnergy[i - 1][j + 1])
-                    {
-                        // Smallest is first
-                        cumulativeEnergy[i][j] += cumulativeEnergy[i - 1][j - 1];
-                    }
-                    else
-                    {
-                        // Smallest is last
-                        cumulativeEnergy[i][j] += cumulativeEnergy[i - 1][j + 1];
-                    }
-
-                }
-                else
+                for (int k = 0; k < 3; ++k)
                 {   
-                    if (cumulativeEnergy[i - 1][j] < cumulativeEnergy[i - 1][j + 1])
+                    if (cumulativeEnergy[i - 1][j - 1 + k] < cumulativeEnergy[smallIndexFirst][smallIndexSecond])
                     {
-                        // Smallest is second
-                        cumulativeEnergy[i][j] += cumulativeEnergy[i - 1][j];
+                        smallIndexSecond = j - 1 + k;
                     }
-                    else
-                    {
-                        // Smallest is third
-                        cumulativeEnergy[i][j] += cumulativeEnergy[i - 1][j + 1];
-                    }
-                    
                 }
+
+                // Add to cumulative energy
+                cumulativeEnergy[i][j] += cumulativeEnergy[smallIndexFirst][smallIndexSecond];
+
             }
         }
     } 
@@ -431,6 +420,7 @@ void createCumulativeEnergy(std::vector<std::vector<int>> &energyNumbers, std::v
     } 
     */
     
+    
 }
 
 // Pre: This function will accpet the horizontal and vertical dimensions as well as the vector (matrix)
@@ -439,26 +429,28 @@ void createCumulativeEnergy(std::vector<std::vector<int>> &energyNumbers, std::v
 void removeVerticalSeam(int &fileHorizontal, int &fileVertical, std::vector<std::vector<int>> &cumulativeEnergy, std::vector<std::vector<int>> &newImage)
 {
     // For the starting point
-    int startingPoint = cumulativeEnergy[fileVertical - 1][0];
+    int startingPoint = cumulativeEnergy[newImage.size() - 1][0];
     std::pair<int,int> startingIndex;
 
     // Set initial starting point
-    startingIndex.first = fileVertical - 1;
+    startingIndex.first = newImage.size() - 1;
     startingIndex.second = 0;
 
-    // vector for 
+    // vector for holding the seam
     std::vector<std::pair<int, int>> indexOfSeam;
 
     // This will find the min on the bottom row (starting point)
-    for (int i = 0; i < fileHorizontal; ++i)
+    for (int i = 0; i < newImage[0].size(); ++i)
     {
-        if (cumulativeEnergy[fileVertical - 1][i] < startingPoint)
+        if (cumulativeEnergy[newImage.size() - 1][i] < startingPoint)
         {
-            startingPoint = cumulativeEnergy[fileVertical - 1][i];
+            startingPoint = cumulativeEnergy[newImage.size() - 1][i];
             startingIndex.second = i;
-
         }
     }
+
+    // Set the index to - 1 to mark it to be removed
+    newImage[startingIndex.first][startingIndex.second] = -1;
 
     // Add starting index to seam
     indexOfSeam.push_back(startingIndex);
@@ -467,27 +459,35 @@ void removeVerticalSeam(int &fileHorizontal, int &fileVertical, std::vector<std:
     std::pair<int, int> nextItem;
 
     // Go through the rest of the image
-    for (int i = 0; i < fileVertical - 1; ++i)
+    for (int i = 0; i < newImage.size() - 1; ++i)
     {
-        if ((indexOfSeam.back().second != 0) && (indexOfSeam.back().second != fileHorizontal - 1)) // If the item is in the middle
+
+        if ((indexOfSeam.back().second != 0) && (indexOfSeam.back().second != newImage[0].size() - 1)) // If the item is in the middle
         {
 
-            if (cumulativeEnergy[indexOfSeam.back().first - 1][indexOfSeam.back().second - 1] < cumulativeEnergy[indexOfSeam.back().first - 1][indexOfSeam.back().second])
+            // For keeping track of the minimum
+            std::pair<int,int> minumumNum;
+            minumumNum.first = indexOfSeam.back().first - 1;
+            minumumNum.second = indexOfSeam.back().second - 1;
+
+            // Find the minumum
+            for (int j = 0; j < 3; ++j)
             {
-                if (cumulativeEnergy[indexOfSeam.back().first - 1][indexOfSeam.back().second - 1] < cumulativeEnergy[indexOfSeam.back().first - 1][indexOfSeam.back().second + 1])
+                if (cumulativeEnergy[indexOfSeam.back().first - 1][indexOfSeam.back().second - 1 + j] < cumulativeEnergy[minumumNum.first][minumumNum.second])
                 {
-                    nextItem.first = indexOfSeam.back().first - 1; 
-                    nextItem.second = indexOfSeam.back().second - 1;
-                }
-                else
-                {
-                    nextItem.first = indexOfSeam.back().first - 1;
-                    nextItem.second = indexOfSeam.back().second + 1;
+                    minumumNum.second = indexOfSeam.back().second - 1 + j;
                 }
             }
             
+            // Set the next item
+            nextItem.first = minumumNum.first;
+            nextItem.second = minumumNum.second;
+            
+            // Set the index to -1 to mark it to be removed
+            newImage[nextItem.first][nextItem.second] = -1;
             // Add next item to seam vector
             indexOfSeam.push_back(nextItem);
+
         }
         else if (indexOfSeam.back().second == 0) // Check left side
         {
@@ -502,11 +502,14 @@ void removeVerticalSeam(int &fileHorizontal, int &fileVertical, std::vector<std:
                 nextItem.first = indexOfSeam.back().first - 1;
                 nextItem.second = indexOfSeam.back().second + 1;
             }
-            
+
+            // Set the index to -1 to mark it to be removed
+            newImage[nextItem.first][nextItem.second] = -1;
+
             // Add next item to seam vector
             indexOfSeam.push_back(nextItem);
         }
-        else if (indexOfSeam.back().second == fileHorizontal - 1) // check right side
+        else if (indexOfSeam.back().second == newImage[0].size() - 1) // check right side
         {
             if (cumulativeEnergy[indexOfSeam.back().first - 1][indexOfSeam.back().second - 1] < cumulativeEnergy[indexOfSeam.back().first - 1][indexOfSeam.back().second])
             {
@@ -518,18 +521,29 @@ void removeVerticalSeam(int &fileHorizontal, int &fileVertical, std::vector<std:
                 nextItem.first = indexOfSeam.back().first - 1;
                 nextItem.second = indexOfSeam.back().second;
             }
-            
+
+            // Set the index to -1 to mark it to be removed
+            newImage[nextItem.first][nextItem.second] = -1;
+
             // Add next item to seam vector
             indexOfSeam.push_back(nextItem);
         }
     }
 
-    // Remove pixels from image and print them out
-    for (int i = 0; i < indexOfSeam.size(); ++i)
+    // Size of the seam
+    int sizeOfSeam = indexOfSeam.size();
+
+    // Do the deletions of the seam items
+    for (int i = 0; i < newImage.size(); ++i)
     {
-        // Remove pixel from image
-        newImage[i].erase(newImage[i].begin() + indexOfSeam[i].second);
-    } 
+        for (int j = 0; j < newImage[i].size(); ++j)
+        {
+            if (newImage[i][j] == -1)
+            {
+                newImage[i].erase(newImage[i].begin() + j);
+            }
+        }
+    }
 
     // Make the size of the horizontal smaller
     fileHorizontal -= 1;
@@ -537,15 +551,16 @@ void removeVerticalSeam(int &fileHorizontal, int &fileVertical, std::vector<std:
     /*
     std::cout << "New Image matrix: " << std::endl;
     // Print out new image matrix
-    for (int i = 0; i < fileVertical; ++i)
+    for (int i = 0; i < newImage.size(); ++i)
     {
-        for (int j = 0; j < fileHorizontal; ++j)
+        for (int j = 0; j < newImage[i].size(); ++j)
         {
             std::cout << newImage[i][j] << " ";
         }
         std::cout << std::endl;
     } 
     */
+    
     
 }
 
