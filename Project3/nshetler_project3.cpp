@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
 
                 for (int i = 0; i < numHorizontal; ++i)
                 {
-                
+
                     // Vector for holding energy calculations
                     // (Will change size overtime to accommodate removal of seams)
                     std::vector<std::vector<int>> energyNumbers(fileHorizontal, std::vector<int>(fileVertical, 0));
@@ -158,6 +158,7 @@ int main(int argc, char *argv[])
 
                 // Transpose the matrix back to normal
                 newImage = transposeMatrix(fileHorizontal, fileVertical, newImage);
+
             }
 
             // Write the new image to a file
@@ -569,7 +570,7 @@ void removeVerticalSeam(int &fileHorizontal, int &fileVertical, std::vector<std:
 // Post: This file will write the data to a file
 void writeImageToFile(int &fileHorizontal, int &fileVertical, std::vector<std::vector<int>> &newImage)
 {
-    std::ofstream outFile("./image_processed.pgm");
+    std::ofstream outFile("../image_processed.pgm");
 
     // Write information to file
     outFile << "P2\n";
@@ -593,9 +594,9 @@ void writeImageToFile(int &fileHorizontal, int &fileVertical, std::vector<std::v
 // Pre: This function will accept the image vector (matrix)
 // Post: This function will return the transposed vector (matrix)
 std::vector<std::vector<int>> transposeMatrix(int &fileHorizontal, int &fileVertical, std::vector<std::vector<int>> &newImage)
-{
+{   
     // This will be the transposed vector
-    std::vector<std::vector<int>> transposedMatrix(fileHorizontal, std::vector<int>(fileVertical, 0));
+    std::vector<std::vector<int>> transposedMatrix(newImage[0].size(), std::vector<int>(newImage.size(), 0));
 
     for (int i = 0; i < newImage.size(); ++i)
     {
