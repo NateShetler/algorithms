@@ -518,6 +518,9 @@ void writeImageToFile(int &fileHorizontal, int &fileVertical, std::vector<std::v
 
         outFile << "\n";
     }
+
+    // Close the file
+    outFile.close();
 }
 
 // Pre: This function will accept the image vector (matrix)
