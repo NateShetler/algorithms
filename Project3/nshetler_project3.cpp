@@ -395,8 +395,8 @@ void removeVerticalSeam(int &fileHorizontal, int &fileVertical, std::vector<std:
         }
     }
 
-    // Set the index to - 1 to mark it to be removed
-    newImage[startingIndex.first][startingIndex.second] = -1;
+    // Remove the pixel from image
+    newImage[startingIndex.first].erase(newImage[startingIndex.first].begin() + startingIndex.second);
 
     // Add starting index to seam
     indexOfSeam.push_back(startingIndex);
@@ -428,9 +428,9 @@ void removeVerticalSeam(int &fileHorizontal, int &fileVertical, std::vector<std:
             // Set the next item
             nextItem.first = minumumNum.first;
             nextItem.second = minumumNum.second;
-            
-            // Set the index to -1 to mark it to be removed
-            newImage[nextItem.first][nextItem.second] = -1;
+
+            // Remove the pixel from the image
+            newImage[nextItem.first].erase(newImage[nextItem.first].begin() + nextItem.second);
 
             // Add next item to seam vector
             indexOfSeam.push_back(nextItem);
@@ -450,8 +450,8 @@ void removeVerticalSeam(int &fileHorizontal, int &fileVertical, std::vector<std:
                 nextItem.second = indexOfSeam.back().second + 1;
             }
 
-            // Set the index to -1 to mark it to be removed
-            newImage[nextItem.first][nextItem.second] = -1;
+            // Remove the pixel from the image
+            newImage[nextItem.first].erase(newImage[nextItem.first].begin() + nextItem.second);
 
             // Add next item to seam vector
             indexOfSeam.push_back(nextItem);
@@ -469,23 +469,11 @@ void removeVerticalSeam(int &fileHorizontal, int &fileVertical, std::vector<std:
                 nextItem.second = indexOfSeam.back().second;
             }
 
-            // Set the index to -1 to mark it to be removed
-            newImage[nextItem.first][nextItem.second] = -1;
+            // Remove the pixel from the image
+            newImage[nextItem.first].erase(newImage[nextItem.first].begin() + nextItem.second);
 
             // Add next item to seam vector
             indexOfSeam.push_back(nextItem);
-        }
-    }
-
-    // Do the deletions of the seam items
-    for (int i = 0; i < newImage.size(); ++i)
-    {
-        for (int j = 0; j < newImage[i].size(); ++j)
-        {
-            if (newImage[i][j] == -1)
-            {
-                newImage[i].erase(newImage[i].begin() + j);
-            }
         }
     }
 
