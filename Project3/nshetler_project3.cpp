@@ -157,6 +157,9 @@ int main(int argc, char *argv[])
         }
       
 	}
+
+    std::cout << "The seams have been removed and the new image has been saved." << std::endl;
+
 	return 0;
 }
 
@@ -198,9 +201,9 @@ std::vector<std::vector<int>> getFileData(std::ifstream &imageFile, int &fileHor
         } 
 
         // Output items from file
-        std::cout << "Horizontal: " << fileHorizontal << std::endl;
-        std::cout << "Vertical: " << fileVertical << std::endl;
-        std::cout << "Max Grayscale value: " << maxGrayscale << std::endl;
+        //std::cout << "Horizontal: " << fileHorizontal << std::endl;
+        //std::cout << "Vertical: " << fileVertical << std::endl;
+        //std::cout << "Max Grayscale value: " << maxGrayscale << std::endl;
 
         return fileNumbers;
     }
