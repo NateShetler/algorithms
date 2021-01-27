@@ -1,6 +1,6 @@
-Nathaniel Shetler
-ID: 4015423
-Class: Algorithms
+Nathaniel Shetler <br>
+ID: 4015423 <br>
+Class: Algorithms <br>
 
 # Project1Part1 (rsa435.cc file):
 
